@@ -15,6 +15,7 @@ import { SignalAbortedError } from '../util/internals/console';
 import { describe, expect, it, test, vi, afterEach } from 'vitest';
 import { StaticCanvas } from '../canvas/StaticCanvas';
 import { FabricText, Point, version } from '../../../../fabric';
+import { Shadow } from '../Shadow';
 import { isTransparent } from '../util';
 import { makeRects } from '../../../../test/utils';
 
@@ -1564,6 +1565,60 @@ describe('Group', () => {
       rect3.shouldCache(),
       'rect3 will not cache because group2 is caching',
     ).toBe(false);
+  });
+
+  it('shouldCache keeps caching when clipPath is set and a child has offset shadow', () => {
+    const child = new Rect({
+      width: 40,
+      height: 40,
+      fill: 'red',
+      shadow: new Shadow({ color: 'black', blur: 10, offsetX: 5, offsetY: 5 }),
+    });
+    const group = new Group([child], {
+      objectCaching: true,
+      clipPath: new Rect({ width: 30, height: 30 }),
+    });
+
+    expect(group.needsItsOwnCache(), 'clipPath requires its own cache').toBe(
+      true,
+    );
+    expect(
+      group.shouldCache(),
+      'group with clipPath must keep caching despite child offset shadow',
+    ).toBe(true);
+  });
+
+  it('renders a group with clipPath and a child offset shadow without throwing', () => {
+    const child = new Rect({
+      left: 50,
+      top: 50,
+      width: 100,
+      height: 100,
+      fill: 'red',
+      shadow: new Shadow({
+        color: 'rgba(0,0,0,0.5)',
+        blur: 20,
+        offsetX: 0,
+        offsetY: 4,
+      }),
+    });
+    const group = new Group([child], {
+      left: 0,
+      top: 0,
+      objectCaching: false,
+    });
+    group.clipPath = new Rect({
+      left: 50,
+      top: 50,
+      width: 100,
+      height: 100,
+      absolutePositioned: true,
+      inverted: true,
+    });
+
+    canvas.add(group);
+    expect(() => canvas.renderAll()).not.toThrow();
+    expect(() => canvas.toDataURL()).not.toThrow();
   });
 
   it('canvas prop propagation with set', () => {
