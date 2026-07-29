@@ -89,3 +89,37 @@ Use the `fabricjs-open-pr` skill when any of these apply:
 - Be concise and factual.
 - Surface assumptions and blockers early.
 - When something cannot be verified locally, state that clearly.
+
+## Cursor Cloud specific instructions
+
+This is a browser/Node canvas **library** (published as `fabric`), not a hosted app. The
+standard commands live in `## Common Commands` above and in `CONTRIBUTING.md`; prefer those.
+The startup update script already runs `pnpm install`.
+
+- Node: `.nvmrc` pins `24`, but the repo only requires `>=20` and everything (build, unit,
+  e2e) works fine on the preinstalled Node 22. No version switch is needed.
+- `canvas` (node-canvas) installs from a prebuilt binary via `pnpm install`; no system build
+  toolchain is required and it works out of the box in Node.
+- Unit tests (`pnpm run test:vitest`) print expected `Error: Could not load img ...` /
+  `Width and height must be set` lines to stderr — these come from intentional malformed-SVG
+  security test cases and do not indicate failure. The run is green if the summary shows all
+  files passed.
+- E2E (`pnpm run test:e2e`) uses Playwright Chromium and serves the repo root on port `8080`
+  (`pnpm run local-server`), loading Fabric from the committed `dist/`. Two gotchas:
+  - The Playwright Chromium browser + its system libs must be present. They are cached in the
+    VM snapshot at `~/.cache/ms-playwright`. If ever missing, run
+    `pnpm exec playwright install --with-deps chromium` once (needs sudo for the `--deps`).
+  - The e2e `globalSetup` only rebuilds the e2e test files, NOT Fabric itself. To exercise
+    your source changes you must run `pnpm run build` (or `build:fast`) first so `dist/` is
+    up to date; otherwise e2e runs against the previously built/committed `dist/`.
+- Manual browser prototyping: `pnpm start vanilla` (parcel dev app) is the documented path,
+  but it relies on `npm link` + `open-cli` + VS Code and is fragile headlessly. For a quick
+  manual check, serve the repo root (`pnpm run local-server`) and load Fabric from
+  `dist/index.min.js` — that is the UMD build exposing the global `fabric`. `dist/index.js`
+  is an ES module, so the plain `<script src=".../dist/index.js">` snippet in `README.md`
+  will not create a global.
+- Default object `originX`/`originY` is `center`; pass `originX: 'left', originY: 'top'` when
+  you want to position by the top-left corner.
+- `pnpm run lint` runs eslint with `--fix`; it may rewrite files. It currently reports only
+  warnings (0 errors). `pnpm run build` regenerates tracked files under `dist/` — do not
+  commit those incidental rebuild diffs unless the build output is the intended change.
