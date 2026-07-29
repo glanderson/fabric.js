@@ -2,6 +2,7 @@
 
 ## [next]
 
+- fix(StyledText): mark dirty on setSelectionStyles so groups re-render [#1](https://github.com/glanderson/fabric.js/pull/1)
 - refactor(core): move implementation source into package [#11041](https://github.com/fabricjs/fabric.js/pull/11041)
 - fix(config): resolve device pixel ratio through env [#11040](https://github.com/fabricjs/fabric.js/pull/11040)
 - refactor(env): move runtime env setup to packages [#11039](https://github.com/fabricjs/fabric.js/pull/11039)

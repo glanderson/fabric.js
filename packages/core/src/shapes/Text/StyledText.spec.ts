@@ -1,5 +1,7 @@
 import { FabricText } from './Text';
 import { graphemeSplit } from '../../util/lang_string';
+import { Group } from '../Group';
+import { StaticCanvas } from '../../canvas/StaticCanvas';
 
 import { describe, expect, it, test } from 'vitest';
 
@@ -36,6 +38,32 @@ describe('setSelectionStyles', () => {
     expect(style2After).toEqual({
       deltaY: 0,
     });
+  });
+
+  test('marks text and parent group dirty so style changes re-render', () => {
+    const canvas = new StaticCanvas(undefined, {
+      width: 200,
+      height: 100,
+      enableRetinaScaling: false,
+    });
+    const text = new FabricText('Hello', {
+      objectCaching: true,
+    });
+    const group = new Group([text], { objectCaching: true });
+    canvas.add(group);
+    canvas.renderAll();
+
+    expect(text.dirty, 'text should be clean after render').toBe(false);
+    expect(group.dirty, 'group should be clean after render').toBe(false);
+
+    text.setSelectionStyles({ underline: true }, 0, 5);
+
+    expect(text._forceClearCache, 'text cache must be forced clear').toBe(true);
+    expect(text.dirty, 'text must be dirty after style change').toBe(true);
+    expect(
+      group.dirty,
+      'parent group must be dirty so its cache is invalidated',
+    ).toBe(true);
   });
 });
 

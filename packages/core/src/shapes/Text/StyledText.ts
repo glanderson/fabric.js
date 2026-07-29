@@ -242,6 +242,8 @@ export abstract class StyledText<
     }
     /* not included in _extendStyles to avoid clearing cache more than once */
     this._forceClearCache = true;
+    // Propagate dirtiness to parent (e.g. Group) so cached parents re-render.
+    this.set('dirty', true);
   }
 
   /**
