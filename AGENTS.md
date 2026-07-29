@@ -89,3 +89,12 @@ Use the `fabricjs-open-pr` skill when any of these apply:
 - Be concise and factual.
 - Surface assumptions and blockers early.
 - When something cannot be verified locally, state that clearly.
+
+## Cursor Cloud specific instructions
+
+Durable, non-obvious notes for cloud agents. The startup update script already runs `pnpm install --frozen-lockfile`; standard commands live in "Common Commands" above.
+
+- Package manager is **pnpm** (`pnpm@10.29.1`, already on PATH), not npm — ignore the stale "Package manager: npm" line above. Node 22 is used here and satisfies `engines.node >=20` (`.nvmrc` pins 24, but 22 works for build/test/lint).
+- Unit tests (`pnpm run test:vitest`) print jsdom "Could not load img" / "Width and height must be set" errors — these are expected error-path assertions, not failures. Watch the final `Tests ... passed` summary.
+- E2E (`pnpm run test:e2e`) needs the Playwright **Chromium** browser plus its system libs, which are provisioned in the VM snapshot (not by the update script). If missing after a cache reset, reinstall with `pnpm --dir packages/e2e exec playwright install chromium` and `sudo env "PATH=$PATH" npx --prefix packages/e2e playwright install-deps chromium` (plain `sudo pnpm ...` fails — pnpm is not on the root PATH). Run a subset with `pnpm --dir packages/e2e run test <path-substring>` (e.g. `controls/rendering`). E2E auto-starts the static server on :8080.
+- Running the dev app (interactive canvas sandbox): the documented `pnpm start vanilla` uses global `npm link` + `open-cli` + `code .`, which is flaky headlessly. Instead: `pnpm run build:fast`, then from `.codesandbox/templates/vanilla` run `npm install` (the `fabric` dep is a `file:` symlink to the repo root, so rebuild the repo to pick up changes) and `npx parcel index.html --port 1234`. The default cropping-controls testcase loads images from `https://fabricjs.com` (needs network egress).
