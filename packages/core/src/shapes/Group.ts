@@ -452,7 +452,11 @@ export class Group
    */
   shouldCache() {
     const ownCache = FabricObject.prototype.shouldCache.call(this);
-    if (ownCache) {
+    // ClipPath (and other needsItsOwnCache cases) require the cache compositing
+    // path. Do not disable caching for child offset shadows in that case — doing
+    // so leaves drawObject with an empty DrawContext and crashes in
+    // createClipPathLayer when parentClipPaths is missing.
+    if (ownCache && !this.needsItsOwnCache()) {
       for (let i = 0; i < this._objects.length; i++) {
         if (this._objects[i].willDrawShadow()) {
           this.ownCaching = false;

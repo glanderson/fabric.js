@@ -2,6 +2,7 @@
 
 ## [next]
 
+- fix(Group): keep caching for clipPath when children cast offset shadows [#2](https://github.com/glanderson/fabric.js/pull/2)
 - refactor(core): move implementation source into package [#11041](https://github.com/fabricjs/fabric.js/pull/11041)
 - fix(config): resolve device pixel ratio through env [#11040](https://github.com/fabricjs/fabric.js/pull/11040)
 - refactor(env): move runtime env setup to packages [#11039](https://github.com/fabricjs/fabric.js/pull/11039)
